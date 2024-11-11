@@ -3,7 +3,7 @@ import plotly.express as px
 import pandas as pd
 
 # Load data and compute static values
-from shared import app_dir, tips, new_df
+from shared import app_dir, new_df
 from shinywidgets import render_plotly
 from script import xgb
 
