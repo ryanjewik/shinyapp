@@ -5,13 +5,15 @@ import pandas as pd
 # Load data and compute static values
 from shared import app_dir, tips, new_df
 from shinywidgets import render_plotly
+from script import xgb
 
 from shiny import reactive, render, App
 from shiny.express import input, ui
 
-
+new_df['zipcode'] = new_df['zipcode'].astype(str)
 price_rng = (min(new_df.price), max(new_df.price))
-bill_rng = (min(tips.total_bill), max(tips.total_bill))
+bed_rng = (min(new_df.bedrooms), max(new_df.bedrooms))
+bath_rng = (min(new_df.bathrooms), max(new_df.bathrooms))
 
 # Add page title and sidebar
 ui.page_opts(title="Housing Prices", fillable=True)
@@ -19,11 +21,27 @@ ui.page_opts(title="Housing Prices", fillable=True)
 with ui.sidebar(open="desktop"):
     ui.input_slider(
         "price",
-        "price",
+        "Price",
         min=price_rng[0],
         max=price_rng[1],
         value=price_rng,
         pre="$",
+    )
+    ui.input_slider(
+        "bedrooms",
+        "Bedrooms",
+        min=bed_rng[0],
+        max=bed_rng[1],
+        value=bed_rng,
+        
+    )
+    ui.input_slider(
+        "bathrooms",
+        "Bathrooms",
+        min=bath_rng[0],
+        max=bath_rng[1],
+        value=bath_rng,
+        
     )
     ui.input_checkbox_group(
         "homeType",
@@ -32,6 +50,14 @@ with ui.sidebar(open="desktop"):
         selected=["CONDO", "SINGLE_FAMILY", "TOWNHOUSE", "MULTI_FAMILY"],
         inline=True,
     )
+    ui.input_text_area(
+        "zipcode", 
+        "Zipcode",
+        "",
+        placeholder="Enter Zipcode",
+        
+        )
+    
     ui.input_action_button("reset", "Reset filter")
 
 # Add main content
@@ -159,13 +185,24 @@ def housing_data():
     price = input.price()
     idx1 = new_df.price.between(price[0], price[1])
     idx2 = new_df.homeType.isin(input.homeType())
-    return new_df[idx1 & idx2]
+    bedrooms = input.bedrooms()
+    idx3 = new_df.bedrooms.between(bedrooms[0], bedrooms[1])
+    bathrooms = input.bathrooms()
+    idx4 = new_df.bathrooms.between(bathrooms[0], bathrooms[1])
+    zip = input.zipcode()
+    if zip == "":
+        idx5 = new_df.zipcode.notnull()
+    else:
+        idx5 = new_df.zipcode == zip
+    return new_df[idx1 & idx2 & idx3 & idx4 & idx5]
 
 
 @reactive.effect
 @reactive.event(input.reset)
 def _():
-    ui.update_slider("price", value=bill_rng)
+    ui.update_slider("price", value=price_rng)
+    ui.update_slider("bedrooms", value=bed_rng)
+    ui.update_slider("bathrooms", value=bath_rng)
     ui.update_checkbox_group("homeType", selected=["CONDO", "SINGLE_FAMILY", "TOWNHOUSE", "MULTI_FAMILY"])
 
 
