@@ -1,3 +1,0 @@
-The goal of this model is to create the best possible predictive model for housing prices. After pre-processing, data retrieval, and feature engineering, we created a linear regression model and a gradient boosting tree. The results were measured using R2, Mean Absolute Error, Mean Squared Error, and other valuation metrics to determine their accuracy.
-
-the data files will need to be stored in a folder named "data" within the "content" folder in google collab. Afterwards the file can be ran just by running all cells
